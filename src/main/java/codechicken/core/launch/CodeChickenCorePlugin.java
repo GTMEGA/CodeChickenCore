@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import codechicken.core.Tags;
 import codechicken.core.asm.*;
 import cpw.mods.fml.relauncher.CoreModManager;
 
@@ -31,11 +32,11 @@ import org.apache.logging.log4j.Logger;
 public class CodeChickenCorePlugin implements IFMLLoadingPlugin, IFMLCallHook
 {
     public static final String mcVersion = "[1.7.10]";
-    public static final String version = "${mod_version}";
+    public static final String version = Tags.VERSION;
 
     public static File minecraftDir;
     public static String currentMcVersion;
-    public static Logger logger = LogManager.getLogger("CodeChickenCore");
+    public static Logger logger = LogManager.getLogger(Tags.MODID);
 
     public CodeChickenCorePlugin() {
         if (minecraftDir != null)
@@ -93,7 +94,7 @@ public class CodeChickenCorePlugin implements IFMLLoadingPlugin, IFMLCallHook
 
     @Override
     public String[] getASMTransformerClass() {
-        versionCheck(mcVersion, "CodeChickenCore");
+        versionCheck(mcVersion, Tags.MODID);
         return new String[]{
                 "codechicken.lib.asm.ClassHeirachyManager",
                 "codechicken.core.asm.InterfaceDependancyTransformer",
@@ -161,7 +162,7 @@ public class CodeChickenCorePlugin implements IFMLLoadingPlugin, IFMLCallHook
                 jar.close();
             }
         } catch (Exception e) {
-            logger.error("CodeChickenCore: Failed to read jar file: " + file.getName(), e);
+            logger.error(Tags.MODID + ": Failed to read jar file: " + file.getName(), e);
         }
     }
 }

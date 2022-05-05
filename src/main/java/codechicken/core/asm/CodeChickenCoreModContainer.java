@@ -6,6 +6,7 @@ import java.util.List;
 
 import codechicken.core.CCUpdateChecker;
 import codechicken.core.ClientUtils;
+import codechicken.core.Tags;
 import codechicken.core.featurehack.LiquidTextures;
 import codechicken.core.internal.CCCEventHandler;
 import codechicken.core.launch.CodeChickenCorePlugin;
@@ -28,11 +29,11 @@ public class CodeChickenCoreModContainer extends DummyModContainer
 
     public static void loadConfig() {
         if(config == null)
-            config = new ConfigFile(new File(CodeChickenCorePlugin.minecraftDir, "config/CodeChickenCore.cfg")).setComment("CodeChickenCore configuration file.");
+            config = new ConfigFile(new File(CodeChickenCorePlugin.minecraftDir, "config/" + Tags.MODID + ".cfg")).setComment(Tags.MODID + " configuration file.");
     }
 
     public CodeChickenCoreModContainer() {
-        super(MetadataCollection.from(MetadataCollection.class.getResourceAsStream("/cccmod.info"), "CodeChickenCore").getMetadataForId("CodeChickenCore", null));
+        super(MetadataCollection.from(MetadataCollection.class.getResourceAsStream("/mcmod.info"), Tags.MODID).getMetadataForId(Tags.MODID, null));
     }
 
     @Override
@@ -67,7 +68,7 @@ public class CodeChickenCoreModContainer extends DummyModContainer
             if (config.getTag("checkUpdates").getBooleanValue(true))
                 CCUpdateChecker.updateCheck(getModId());
 
-            ClientUtils.enhanceSupportersList("CodeChickenCore");
+            ClientUtils.enhanceSupportersList(Tags.MODID);
 
             FMLCommonHandler.instance().bus().register(new CCCEventHandler());
             MinecraftForge.EVENT_BUS.register(new CCCEventHandler());
