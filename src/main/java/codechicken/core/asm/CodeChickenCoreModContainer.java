@@ -6,6 +6,7 @@ import java.util.List;
 
 import codechicken.core.CCUpdateChecker;
 import codechicken.core.ClientUtils;
+import codechicken.core.ResourceUtil;
 import codechicken.core.Tags;
 import codechicken.core.featurehack.LiquidTextures;
 import codechicken.core.internal.CCCEventHandler;
@@ -33,7 +34,7 @@ public class CodeChickenCoreModContainer extends DummyModContainer
     }
 
     public CodeChickenCoreModContainer() {
-        super(MetadataCollection.from(MetadataCollection.class.getResourceAsStream("/mcmod.info"), Tags.MODID).getMetadataForId(Tags.MODID, null));
+        super(MetadataCollection.from(ResourceUtil.getResourceFromJar("/mcmod.info", CodeChickenCoreModContainer.class), Tags.MODID).getMetadataForId(Tags.MODID, null));
     }
 
     @Override
