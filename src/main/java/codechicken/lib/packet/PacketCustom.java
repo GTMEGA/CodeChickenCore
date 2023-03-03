@@ -149,8 +149,8 @@ public final class PacketCustom implements MCDataInput, MCDataOutput
             return (String) channelKey;
 
         ModContainer mc = channelKey instanceof ModContainer ?
-                (ModContainer) channelKey :
-                FMLCommonHandler.instance().findContainerFor(channelKey);
+                          (ModContainer) channelKey :
+                          FMLCommonHandler.instance().findContainerFor(channelKey);
         if (mc != null) {
             String s = mc.getModId();
             if(s.length() > 20)
@@ -351,9 +351,9 @@ public final class PacketCustom implements MCDataInput, MCDataOutput
 
     public PacketCustom writeItemStack(ItemStack stack, boolean large) {
         if (stack == null) {
-            writeShort(-1);
+            writeInt(-1);
         } else {
-            writeShort(Item.getIdFromItem(stack.getItem()));
+            writeInt(Item.getIdFromItem(stack.getItem()));
             if (large)
                 writeInt(stack.stackSize);
             else
@@ -450,7 +450,7 @@ public final class PacketCustom implements MCDataInput, MCDataOutput
 
     public ItemStack readItemStack(boolean large) {
         ItemStack item = null;
-        short itemID = readShort();
+        int itemID = readInt();
 
         if (itemID >= 0) {
             int stackSize = large ? readInt() : readByte();
