@@ -66,9 +66,6 @@ public class CodeChickenCoreModContainer extends DummyModContainer
     @Subscribe
     public void init(FMLInitializationEvent event) {
         if (event.getSide().isClient()) {
-            if (config.getTag("checkUpdates").getBooleanValue(true))
-                CCUpdateChecker.updateCheck(getModId());
-
             ClientUtils.enhanceSupportersList(Tags.MODID);
 
             FMLCommonHandler.instance().bus().register(new CCCEventHandler());

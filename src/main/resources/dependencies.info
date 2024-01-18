@@ -1,7 +1,0 @@
-{
-	"repo": "https://mvn.falsepattern.com/gtmega_releases/codechicken/codechickenlib-mc1.7.10/1.2.0-mega",
-	"file": "codechickenlib-mc1.7.10-1.2.0-mega.jar",
-	"dev": "codechickenlib-mc1.7.10-1.2.0-mega-dev.jar",
-	"class": "codechicken.lib.asm.ASMHelper",
-	"coreLib": true
-}
