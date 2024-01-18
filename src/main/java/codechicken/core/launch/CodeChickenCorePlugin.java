@@ -96,6 +96,7 @@ public class CodeChickenCorePlugin implements IFMLLoadingPlugin, IFMLCallHook
         versionCheck(mcVersion, Tags.MODID);
         return new String[]{
                 "codechicken.lib.asm.ClassHeirachyManager",
+                "codechicken.lib.asm.CCLibCorrector",
                 "codechicken.core.asm.InterfaceDependancyTransformer",
                 "codechicken.core.asm.TweakTransformer",
                 "codechicken.core.asm.DelegatedTransformer",

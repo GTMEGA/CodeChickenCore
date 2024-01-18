@@ -1,3 +1,3 @@
 dependencies {
-    compile("codechicken:codechickenlib-mc1.7.10:1.1.4-gtmega:dev")
+    shadeCompile("codechicken:codechickenlib-mc1.7.10:1.3.0-mega:dev")
 }
