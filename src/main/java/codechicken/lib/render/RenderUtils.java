@@ -24,30 +24,58 @@ import static net.minecraftforge.client.IItemRenderer.ItemRendererHelper.BLOCK_3
 
 public class RenderUtils
 {
-    static Vector3[] vectors = new Vector3[8];
-    static RenderItem uniformRenderItem = new RenderItem()
-    {
-        public boolean shouldBob()
+    private static class ThreadState {
+        Vector3[] vectors = new Vector3[8];
+        RenderItem uniformRenderItem = new RenderItem()
         {
-            return false;
+            public boolean shouldBob()
+            {
+                return false;
+            }
+        };
+        EntityItem entityItem;
+
+        private ThreadState() {
+            for(int i = 0; i < vectors.length; i++)
+                vectors[i] = new Vector3();
+
+            uniformRenderItem.setRenderManager(RenderManager.instance);
+
+            entityItem = new EntityItem(null);
+            entityItem.hoverStart = 0;
         }
-    };
-    static EntityItem entityItem;
-    
-    static
-    {
-        for(int i = 0; i < vectors.length; i++)
-            vectors[i] = new Vector3();
-        
-        uniformRenderItem.setRenderManager(RenderManager.instance);
-        
-        entityItem = new EntityItem(null);
-        entityItem.hoverStart = 0;
     }
+
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+
+    public static Vector3[] vectors() {
+        return threadState.get().vectors;
+    }
+
+    public static void vectors(Vector3[] v) {
+        threadState.get().vectors = v;
+    }
+
+    public static RenderItem uniformRenderItem() {
+        return threadState.get().uniformRenderItem;
+    }
+
+    public static void uniformRenderItem(RenderItem v) {
+        threadState.get().uniformRenderItem = v;
+    }
+
+    public static EntityItem entityItem() {
+        return threadState.get().entityItem;
+    }
+
+    public static void entityItem(EntityItem v) {
+        threadState.get().entityItem = v;
+    }
+
 
     public static void renderFluidQuad(Vector3 point1, Vector3 point2, Vector3 point3, Vector3 point4, IIcon icon, double res)
     {
-        renderFluidQuad(point2, vectors[0].set(point4).subtract(point1), vectors[1].set(point1).subtract(point2), icon, res);
+        renderFluidQuad(point2, vectors()[0].set(point4).subtract(point1), vectors()[1].set(point1).subtract(point2), icon, res);
     }
 
     /**
@@ -83,10 +111,10 @@ public class RenderUtils
                 if(ry > res)
                     ry = res;
 
-                Vector3 dx1 = vectors[2].set(wide).multiply(x/wlen);
-                Vector3 dx2 = vectors[3].set(wide).multiply((x+rx)/wlen);    
-                Vector3 dy1 = vectors[4].set(high).multiply(y/hlen);    
-                Vector3 dy2 = vectors[5].set(high).multiply((y+ry)/hlen);
+                Vector3 dx1 = vectors()[2].set(wide).multiply(x/wlen);
+                Vector3 dx2 = vectors()[3].set(wide).multiply((x+rx)/wlen);
+                Vector3 dy1 = vectors()[4].set(high).multiply(y/hlen);
+                Vector3 dy2 = vectors()[5].set(high).multiply((y+ry)/hlen);
 
                 t.addVertexWithUV(base.x+dx1.x+dy2.x, base.y+dx1.y+dy2.y, base.z+dx1.z+dy2.z, u1, v2-ry/res*dv);
                 t.addVertexWithUV(base.x+dx1.x+dy1.x, base.y+dx1.y+dy1.y, base.z+dx1.z+dy1.z, u1, v2);
@@ -347,8 +375,8 @@ public class RenderUtils
 
         GL11.glColor4f(1, 1, 1, 1);
         
-        entityItem.setEntityItemStack(item);
-        uniformRenderItem.doRender(entityItem, 0, larger ? 0.09 : 0.06, 0, 0, (float)(spin*9/Math.PI));
+        entityItem().setEntityItemStack(item);
+        uniformRenderItem().doRender(entityItem(), 0, larger ? 0.09 : 0.06, 0, 0, (float)(spin*9/Math.PI));
         
         if(larger)
             GL11.glScaled(d1, d1, d1);

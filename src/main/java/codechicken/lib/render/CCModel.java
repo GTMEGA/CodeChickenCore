@@ -56,7 +56,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
     }
 
     public Vector3[] normals() {
-        return getAttributes(CCRenderState.normalAttrib);
+        return getAttributes(CCRenderState.normalAttrib());
     }
 
     @Override
@@ -277,7 +277,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
         if(length%vp != 0 || start%vp != 0)
             throw new IllegalArgumentException("Cannot generate normals across polygons");
 
-        Vector3[] normals = getOrAllocate(CCRenderState.normalAttrib);
+        Vector3[] normals = getOrAllocate(CCRenderState.normalAttrib());
         for(int k = 0; k < length; k+=vp)
         {
             int i = k + start;
@@ -299,9 +299,9 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
     public CCModel computeLighting(LightModel light)
     {
         Vector3[] normals = normals();
-        int[] colours = getAttributes(CCRenderState.lightingAttrib);
+        int[] colours = getAttributes(CCRenderState.lightingAttrib());
         if(colours == null) {
-            colours = getOrAllocate(CCRenderState.lightingAttrib);
+            colours = getOrAllocate(CCRenderState.lightingAttrib());
             Arrays.fill(colours, -1);
         }
         for(int k = 0; k < verts.length; k++)
@@ -311,7 +311,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
 
     public CCModel setColour(int c)
     {
-        int[] colours = getOrAllocate(CCRenderState.colourAttrib);
+        int[] colours = getOrAllocate(CCRenderState.colourAttrib());
         Arrays.fill(colours, c);
         return this;
     }
@@ -321,7 +321,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
      * @return The model
      */
     public CCModel computeLightCoords() {
-        LC[] lcs = getOrAllocate(CCRenderState.lightCoordAttrib);
+        LC[] lcs = getOrAllocate(CCRenderState.lightCoordAttrib());
         Vector3[] normals = normals();
         for(int i = 0; i < verts.length; i++)
             lcs[i] = new LC().compute(verts[i].vec, normals[i]);
@@ -472,14 +472,34 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
         illegalAssert(m.matches(), "Malformed line: "+s);
     }
 
+    private static class ThreadState {
+        public final Matcher vertMatcher = vertPattern.matcher("");
+        public final Matcher uvwMatcher = uvwPattern.matcher("");
+        public final Matcher normalMatcher = normalPattern.matcher("");
+        public final Matcher polyMatcher = polyPattern.matcher("");
+    }
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+
     private static final Pattern vertPattern = Pattern.compile("v(?: ([\\d\\.+-]+))+");
     private static final Pattern uvwPattern = Pattern.compile("vt(?: ([\\d\\.+-]+))+");
     private static final Pattern normalPattern = Pattern.compile("vn(?: ([\\d\\.+-]+))+");
     private static final Pattern polyPattern = Pattern.compile("f(?: ((?:\\d*)(?:/\\d*)?(?:/\\d*)?))+");
-    public static final Matcher vertMatcher = vertPattern.matcher("");
-    public static final Matcher uvwMatcher = uvwPattern.matcher("");
-    public static final Matcher normalMatcher = normalPattern.matcher("");
-    public static final Matcher polyMatcher = polyPattern.matcher("");
+
+    public static Matcher vertMatcher() {
+        return threadState.get().vertMatcher;
+    }
+
+    public static Matcher uvwMatcher() {
+        return threadState.get().uvwMatcher;
+    }
+
+    public static Matcher normalMatcher() {
+        return threadState.get().normalMatcher;
+    }
+
+    public static Matcher polyMatcher() {
+        return threadState.get().polyMatcher;
+    }
 
     /**
      * Parses vertices, texture coords, normals and polygons from a WaveFront Obj file
@@ -513,7 +533,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
 
             if(line.startsWith("v "))
             {
-                assertMatch(vertMatcher, line);
+                assertMatch(vertMatcher(), line);
                 double[] values = parseDoubles(line.substring(2), " ");
                 illegalAssert(values.length >= 3, "Vertices must have x, y and z components");
                 Vector3 vert = new Vector3(values[0], values[1], values[2]);
@@ -523,7 +543,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
             }
             if(line.startsWith("vt "))
             {
-                assertMatch(uvwMatcher, line);
+                assertMatch(uvwMatcher(), line);
                 double[] values = parseDoubles(line.substring(3), " ");
                 illegalAssert(values.length >= 2, "Tex Coords must have u, and v components");
                 uvs.add(new Vector3(values[0], 1-values[1], 0));
@@ -531,7 +551,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
             }
             if(line.startsWith("vn "))
             {
-                assertMatch(normalMatcher, line);
+                assertMatch(normalMatcher(), line);
                 double[] values = parseDoubles(line.substring(3), " ");
                 illegalAssert(values.length >= 3, "Normals must have x, y and z components");
                 Vector3 norm = new Vector3(values[0], values[1], values[2]).normalize();
@@ -541,7 +561,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
             }
             if(line.startsWith("f "))
             {
-                assertMatch(polyMatcher, line);
+                assertMatch(polyMatcher(), line);
                 String[] av = line.substring(2).split(" ");
                 illegalAssert(av.length >= 3, "Polygons must have at least 3 vertices");
                 int[][] polyVerts = new int[av.length][3];
@@ -664,7 +684,7 @@ public class CCModel implements CCRenderState.IVertexSource, Copyable<CCModel>
         boolean hasNormals = polys.get(0)[2] > 0;
         CCModel model = CCModel.newModel(vertexMode, polys.size());
         if(hasNormals)
-            model.getOrAllocate(CCRenderState.normalAttrib);
+            model.getOrAllocate(CCRenderState.normalAttrib());
 
         for(int i = 0; i < polys.size(); i++)
         {

@@ -28,17 +28,26 @@ public class LightModel implements CCRenderState.IVertexOperation
             return this;
         }
     }
-    
-    public static LightModel standardLightModel;
-    static {
-        standardLightModel = new LightModel()
+
+    private static class ThreadState {
+        public LightModel standardLightModel = new LightModel()
                 .setAmbient(new Vector3(0.4, 0.4, 0.4))
                 .addLight(new Light(new Vector3(0.2, 1, -0.7))
-                        .setDiffuse(new Vector3(0.6, 0.6, 0.6)))
+                                  .setDiffuse(new Vector3(0.6, 0.6, 0.6)))
                 .addLight(new Light(new Vector3(-0.2, 1, 0.7))
-                        .setDiffuse(new Vector3(0.6, 0.6, 0.6)));
+                                  .setDiffuse(new Vector3(0.6, 0.6, 0.6)));
+
     }
-    
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+
+    public static LightModel standardLightModel() {
+        return threadState.get().standardLightModel;
+    }
+
+    public static void standardLightModel(LightModel v) {
+        threadState.get().standardLightModel = v;
+    }
+
     private Vector3 ambient = new Vector3();
     private Light[] lights = new Light[8];
     private int lightCount;
@@ -82,17 +91,17 @@ public class LightModel implements CCRenderState.IVertexOperation
 
     @Override
     public boolean load() {
-        if(!CCRenderState.computeLighting)
+        if(!CCRenderState.computeLighting())
             return false;
 
-        CCRenderState.pipeline.addDependency(CCRenderState.normalAttrib);
-        CCRenderState.pipeline.addDependency(CCRenderState.colourAttrib);
+        CCRenderState.pipeline().addDependency(CCRenderState.normalAttrib());
+        CCRenderState.pipeline().addDependency(CCRenderState.colourAttrib());
         return true;
     }
 
     @Override
     public void operate() {
-        CCRenderState.setColour(apply(CCRenderState.colour, CCRenderState.normal));
+        CCRenderState.setColour(apply(CCRenderState.colour(), CCRenderState.normal()));
     }
 
     @Override

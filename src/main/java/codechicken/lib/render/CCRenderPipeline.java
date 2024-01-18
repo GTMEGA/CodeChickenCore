@@ -74,7 +74,7 @@ public class CCRenderPipeline
     }
 
     public void rebuild() {
-        if(ops.isEmpty() || CCRenderState.model == null)
+        if(ops.isEmpty() || CCRenderState.model() == null)
             return;
 
         //ensure enough nodes for all ops
@@ -82,12 +82,12 @@ public class CCRenderPipeline
             nodes.add(new PipelineNode());
         unbuild();
 
-        if(CCRenderState.useNormals)
-            addAttribute(CCRenderState.normalAttrib);
-        if(CCRenderState.useColour)
-            addAttribute(CCRenderState.colourAttrib);
-        if(CCRenderState.computeLighting)
-            addAttribute(CCRenderState.lightingAttrib);
+        if(CCRenderState.useNormals())
+            addAttribute(CCRenderState.normalAttrib());
+        if(CCRenderState.useColour())
+            addAttribute(CCRenderState.colourAttrib());
+        if(CCRenderState.computeLighting())
+            addAttribute(CCRenderState.lightingAttrib());
 
         for(int i = 0; i < ops.size(); i++) {
             IVertexOperation op = ops.get(i);

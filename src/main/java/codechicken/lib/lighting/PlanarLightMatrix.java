@@ -7,8 +7,19 @@ import net.minecraft.world.IBlockAccess;
 
 public class PlanarLightMatrix extends PlanarLightModel
 {
+    private static class ThreadState {
+        public PlanarLightMatrix instance = new PlanarLightMatrix();
+    }
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+    public static PlanarLightMatrix instance() {
+        return threadState.get().instance;
+    }
+
+    public static void instance(PlanarLightMatrix v) {
+        threadState.get().instance = v;
+    }
+
     public static final int operationIndex = CCRenderState.registerOperation();
-    public static PlanarLightMatrix instance = new PlanarLightMatrix();
 
     public IBlockAccess access;
     public BlockCoord pos = new BlockCoord();
@@ -17,7 +28,7 @@ public class PlanarLightMatrix extends PlanarLightModel
     public int[] brightness = new int[6];
 
     public PlanarLightMatrix() {
-        super(PlanarLightModel.standardLightModel.colours);
+        super(PlanarLightModel.standardLightModel().colours);
     }
 
     public PlanarLightMatrix locate(IBlockAccess a, int x, int y, int z) {
@@ -38,14 +49,14 @@ public class PlanarLightMatrix extends PlanarLightModel
 
     @Override
     public boolean load() {
-        CCRenderState.pipeline.addDependency(CCRenderState.sideAttrib);
+        CCRenderState.pipeline().addDependency(CCRenderState.sideAttrib());
         return true;
     }
 
     @Override
     public void operate() {
         super.operate();
-        CCRenderState.setBrightness(brightness(CCRenderState.side));
+        CCRenderState.setBrightness(brightness(CCRenderState.side()));
     }
 
     @Override

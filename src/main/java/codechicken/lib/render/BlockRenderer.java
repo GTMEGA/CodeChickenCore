@@ -20,17 +20,17 @@ public class BlockRenderer
 
         @Override
         public <T> T getAttributes(CCRenderState.VertexAttribute<T> attr) {
-            return attr == CCRenderState.lightCoordAttrib && lcComputed ? (T)lightCoords : null;
+            return attr == CCRenderState.lightCoordAttrib() && lcComputed ? (T)lightCoords : null;
         }
 
         @Override
         public boolean hasAttribute(CCRenderState.VertexAttribute<?> attr) {
-            return attr == CCRenderState.sideAttrib || attr == CCRenderState.lightCoordAttrib && lcComputed;
+            return attr == CCRenderState.sideAttrib() || attr == CCRenderState.lightCoordAttrib() && lcComputed;
         }
 
         @Override
         public void prepareVertex() {
-            CCRenderState.side = side;
+            CCRenderState.side(side);
         }
 
         public BlockFace computeLightCoords() {
@@ -123,23 +123,35 @@ public class BlockRenderer
 
         @Override
         public <T> T getAttributes(VertexAttribute<T> attr) {
-            return attr == CCRenderState.lightCoordAttrib ? (T) lightCoords : null;
+            return attr == CCRenderState.lightCoordAttrib() ? (T) lightCoords : null;
         }
 
         @Override
         public boolean hasAttribute(VertexAttribute<?> attr) {
-            return attr == CCRenderState.sideAttrib || attr == CCRenderState.lightCoordAttrib;
+            return attr == CCRenderState.sideAttrib() || attr == CCRenderState.lightCoordAttrib();
         }
 
         @Override
         public void prepareVertex() {
-            CCRenderState.side = CCRenderState.vertexIndex>>2;
+            CCRenderState.side(CCRenderState.vertexIndex()>>2);
         }
     }
 
-    public static FullBlock fullBlock = new FullBlock();
+    private static class ThreadState {
+        public FullBlock fullBlock = new FullBlock();
+        private BlockFace face = new BlockFace();
+    }
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+
+    public static FullBlock fullBlock() {
+        return threadState.get().fullBlock;
+    }
+
+    public static void fullBlock(FullBlock v) {
+        threadState.get().fullBlock = v;
+    }
     public static void renderFullBlock(int sideMask) {
-        CCRenderState.setModel(fullBlock);
+        CCRenderState.setModel(fullBlock());
         renderFaces(sideMask);
     }
 
@@ -156,7 +168,10 @@ public class BlockRenderer
             }
     }
 
-    private static BlockFace face = new BlockFace();
+    public static BlockFace face() {
+        return threadState.get().face;
+    }
+
     /**
      * Renders faces of a cuboid with texture coordinates mapped to match a standard minecraft block
      * @param bounds The bounding cuboid to render
@@ -165,10 +180,10 @@ public class BlockRenderer
     public static void renderCuboid(Cuboid6 bounds, int sideMask) {
         if(sideMask == 0x3F) return;
 
-        CCRenderState.setModel(face);
+        CCRenderState.setModel(face());
         for(int s = 0; s < 6; s++)
             if((sideMask & 1<<s) == 0) {
-                face.loadCuboidFace(bounds, s);
+                face().loadCuboidFace(bounds, s);
                 CCRenderState.render();
             }
     }

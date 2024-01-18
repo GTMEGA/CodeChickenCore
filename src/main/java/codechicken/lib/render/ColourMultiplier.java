@@ -4,9 +4,18 @@ import codechicken.lib.colour.ColourRGBA;
 
 public class ColourMultiplier implements CCRenderState.IVertexOperation
 {
-    private static ColourMultiplier instance = new ColourMultiplier(-1);
+    private static class ThreadState {
+        private ColourMultiplier instance = new ColourMultiplier(-1);
+
+    }
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+
+    private static ColourMultiplier instance() {
+        return threadState.get().instance;
+    }
 
     public static ColourMultiplier instance(int colour) {
+        ColourMultiplier instance = instance();
         instance.colour = colour;
         return instance;
     }
@@ -25,13 +34,13 @@ public class ColourMultiplier implements CCRenderState.IVertexOperation
             return false;
         }
 
-        CCRenderState.pipeline.addDependency(CCRenderState.colourAttrib);
+        CCRenderState.pipeline().addDependency(CCRenderState.colourAttrib());
         return true;
     }
 
     @Override
     public void operate() {
-        CCRenderState.setColour(ColourRGBA.multiply(CCRenderState.colour, colour));
+        CCRenderState.setColour(ColourRGBA.multiply(CCRenderState.colour(), colour));
     }
 
     @Override

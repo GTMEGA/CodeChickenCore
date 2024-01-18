@@ -11,7 +11,18 @@ import net.minecraft.world.IBlockAccess;
 public class SimpleBrightnessModel implements CCRenderState.IVertexOperation
 {
     public static final int operationIndex = CCRenderState.registerOperation();
-    public static SimpleBrightnessModel instance = new SimpleBrightnessModel();
+    private static class ThreadState {
+        public SimpleBrightnessModel instance = new SimpleBrightnessModel();
+    }
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+
+    public static SimpleBrightnessModel instance() {
+        return threadState.get().instance;
+    }
+
+    public static void instance(SimpleBrightnessModel v) {
+        threadState.get().instance = v;
+    }
 
     public IBlockAccess access;
     public BlockCoord pos = new BlockCoord();
@@ -38,13 +49,13 @@ public class SimpleBrightnessModel implements CCRenderState.IVertexOperation
 
     @Override
     public boolean load() {
-        CCRenderState.pipeline.addDependency(CCRenderState.sideAttrib);
+        CCRenderState.pipeline().addDependency(CCRenderState.sideAttrib());
         return true;
     }
 
     @Override
     public void operate() {
-        CCRenderState.setBrightness(sample(CCRenderState.side));
+        CCRenderState.setBrightness(sample(CCRenderState.side()));
     }
 
     @Override

@@ -139,21 +139,21 @@ public class LightMatrix implements CCRenderState.IVertexOperation
 
     @Override
     public boolean load() {
-        if(!CCRenderState.computeLighting)
+        if(!CCRenderState.computeLighting())
             return false;
 
-        CCRenderState.pipeline.addDependency(CCRenderState.colourAttrib);
-        CCRenderState.pipeline.addDependency(CCRenderState.lightCoordAttrib);
+        CCRenderState.pipeline().addDependency(CCRenderState.colourAttrib());
+        CCRenderState.pipeline().addDependency(CCRenderState.lightCoordAttrib());
         return true;
     }
 
     @Override
     public void operate() {
-        LC lc = CCRenderState.lc;
+        LC lc = CCRenderState.lc();
         float[] a = ao(lc.side);
         float f = (a[0] * lc.fa + a[1] * lc.fb + a[2] * lc.fc + a[3] * lc.fd);
         int[] b = brightness(lc.side);
-        CCRenderState.setColour(ColourRGBA.multiplyC(CCRenderState.colour, f));
+        CCRenderState.setColour(ColourRGBA.multiplyC(CCRenderState.colour(), f));
         CCRenderState.setBrightness((int) (b[0] * lc.fa + b[1] * lc.fb + b[2] * lc.fc + b[3] * lc.fd) & 0xFF00FF);
     }
 

@@ -8,7 +8,22 @@ import codechicken.lib.render.CCRenderState;
  */
 public class PlanarLightModel implements CCRenderState.IVertexOperation
 {
-    public static PlanarLightModel standardLightModel = LightModel.standardLightModel.reducePlanar();
+
+    public static class ThreadState {
+        public PlanarLightModel standardLightModel = LightModel.standardLightModel().reducePlanar();
+        public static ThreadState threadState() {
+            return threadState.get();
+        }
+    }
+    private static final ThreadLocal<ThreadState> threadState = ThreadLocal.withInitial(ThreadState::new);
+
+    public static PlanarLightModel standardLightModel() {
+        return threadState.get().standardLightModel;
+    }
+
+    public static void standardLightModel(PlanarLightModel v) {
+        threadState.get().standardLightModel = v;
+    }
 
     public int[] colours;
 
@@ -18,17 +33,17 @@ public class PlanarLightModel implements CCRenderState.IVertexOperation
 
     @Override
     public boolean load() {
-        if(!CCRenderState.computeLighting)
+        if(!CCRenderState.computeLighting())
             return false;
 
-        CCRenderState.pipeline.addDependency(CCRenderState.sideAttrib);
-        CCRenderState.pipeline.addDependency(CCRenderState.colourAttrib);
+        CCRenderState.pipeline().addDependency(CCRenderState.sideAttrib());
+        CCRenderState.pipeline().addDependency(CCRenderState.colourAttrib());
         return true;
     }
 
     @Override
     public void operate() {
-        CCRenderState.setColour(ColourRGBA.multiply(CCRenderState.colour, colours[CCRenderState.side]));
+        CCRenderState.setColour(ColourRGBA.multiply(CCRenderState.colour(), colours[CCRenderState.side()]));
     }
 
     @Override
