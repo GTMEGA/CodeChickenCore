@@ -29,7 +29,10 @@ public class TextureUtils
         public int atlasIndex();
     }
 
+    private static Thread mainThread;
+
     static {
+        mainThread = Thread.currentThread();
         MinecraftForge.EVENT_BUS.register(new TextureUtils());
     }
 
@@ -96,6 +99,8 @@ public class TextureUtils
     }
 
     public static void bindAtlas(int atlasIndex) {
+        if (Thread.currentThread() != mainThread)
+            return;
         engine().bindTexture(atlasIndex == 0 ? TextureMap.locationBlocksTexture : TextureMap.locationItemsTexture);
     }
 
