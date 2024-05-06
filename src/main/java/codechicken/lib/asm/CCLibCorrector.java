@@ -53,7 +53,9 @@ public class CCLibCorrector implements IClassTransformer {
                 "hasColour",
                 "colour",
                 "hasBrightness",
-                "brightness"));
+                "brightness",
+                "side",
+                "lc"));
         replacements.put("codechicken/lib/render/ColourMultiplier", Arrays.asList("instance"));
         replacements.put("codechicken/lib/render/RenderUtils", Arrays.asList("vectors", "uniformRenderItem"));
     }
