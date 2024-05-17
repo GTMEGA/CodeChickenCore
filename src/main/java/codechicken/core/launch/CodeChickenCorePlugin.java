@@ -44,21 +44,6 @@ public class CodeChickenCorePlugin implements IFMLLoadingPlugin, IFMLCallHook
 
         minecraftDir = (File) FMLInjectionData.data()[6];
         currentMcVersion = (String) FMLInjectionData.data()[4];
-
-        injectDeobfPlugin();
-    }
-
-    private void injectDeobfPlugin() {
-        try {
-            Class<?> wrapperClass = Class.forName("cpw.mods.fml.relauncher.CoreModManager$FMLPluginWrapper");
-            Constructor wrapperConstructor = wrapperClass.getConstructor(String.class, IFMLLoadingPlugin.class, File.class, Integer.TYPE, String[].class);
-            Field f_loadPlugins = CoreModManager.class.getDeclaredField("loadPlugins");
-            wrapperConstructor.setAccessible(true);
-            f_loadPlugins.setAccessible(true);
-            ((List)f_loadPlugins.get(null)).add(2, wrapperConstructor.newInstance("CCCDeobfPlugin", new MCPDeobfuscationTransformer.LoadPlugin(), null, 0, new String[0]));
-        } catch (Exception e) {
-            logger.error("Failed to inject MCPDeobfuscation Transformer", e);
-        }
     }
 
     public static void versionCheck(String reqVersion, String mod) {

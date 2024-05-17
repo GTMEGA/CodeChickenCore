@@ -71,75 +71,13 @@ public class CCLibCorrector implements IClassTransformer {
         ClassReader reader = new ClassReader(bytes);
         reader.accept(cn, 0);
         boolean changed = false;
-        changed |= genericRedirect(cn, transformedName);
-        for (ScalaSingletonThreadSafePatcher patcher: SCALA_PATCHERS) {
-            changed |= patcher.patch(cn);
-        }
+        changed = genericRedirect(cn, transformedName);
         if (changed) {
             ClassWriter writer = new ClassWriter(0);
             cn.accept(writer);
             return writer.toByteArray();
         } else {
             return bytes;
-        }
-    }
-
-    private static ScalaSingletonThreadSafePatcher[] SCALA_PATCHERS = new ScalaSingletonThreadSafePatcher[] {
-            new ScalaSingletonThreadSafePatcher("codechicken/microblock/MaterialRenderHelper$",
-                                                "codechicken/lib/compat/microblock/MicroblockThreadSafe",
-                                                "MaterialRenderHelper",
-                                                "pass", "builder"),
-            new ScalaSingletonThreadSafePatcher("codechicken/microblock/MicroblockRender$",
-                                                "codechicken/lib/compat/microblock/MicroblockThreadSafe",
-                                                "MicroblockRender",
-                                                "face")
-    };
-
-    private static class ScalaSingletonThreadSafePatcher {
-        private final String className;
-        private final String handlerClass;
-        private final String methodPrefix;
-        private final String[] fields;
-
-        private ScalaSingletonThreadSafePatcher(String className, String handlerClass, String methodPrefix, String... fields) {
-            this.className = className;
-            this.handlerClass = handlerClass;
-            this.methodPrefix = methodPrefix;
-            this.fields = fields;
-        }
-
-        public boolean patch(ClassNode cn) {
-            if (!className.equals(cn.name))
-                return false;
-            boolean modified = false;
-            for (MethodNode methodNode: cn.methods) {
-                ListIterator<AbstractInsnNode> insnList = methodNode.instructions.iterator();
-                while (insnList.hasNext()) {
-                    AbstractInsnNode insn = insnList.next();
-                    if (!(insn instanceof FieldInsnNode)) {
-                        continue;
-                    }
-                    FieldInsnNode field = (FieldInsnNode) insn;
-                    int opcode = field.getOpcode();
-                    if (opcode != Opcodes.GETFIELD && opcode != Opcodes.PUTFIELD)
-                        continue;
-
-                    if (!className.equals(field.owner))
-                        continue;
-                    for (String fieldName: fields) {
-                        if (!field.name.equals(fieldName))
-                            continue;
-                        insnList.remove();
-                        if (opcode == Opcodes.PUTFIELD)
-                            insnList.add(new InsnNode(Opcodes.SWAP));
-                        insnList.add(new InsnNode(Opcodes.POP));
-                        MethodInsnNode method = new MethodInsnNode(Opcodes.INVOKESTATIC, handlerClass, methodPrefix + "$" + field.name, opcode == Opcodes.GETFIELD ? "()" + field.desc : "(" + field.desc + ")V", false);
-                        insnList.add(method);
-                        modified = true;
-                    }
-                }
-            }
-            return modified;
         }
     }
 
