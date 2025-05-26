@@ -5,6 +5,9 @@ plugins {
 group = "codechicken"
 
 minecraft_fp {
+    java {
+        compatibility = jabel
+    }
     mod {
         modid = "CodeChickenCore"
         name = "CodeChicken Core"
