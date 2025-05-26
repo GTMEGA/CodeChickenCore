@@ -1,5 +1,5 @@
 plugins {
-    id("fpgradle-minecraft") version ("0.12.1")
+    id("com.falsepattern.fpgradle-mc") version ("0.15.1")
 }
 
 group = "codechicken"
